@@ -1,0 +1,27 @@
+import numpy as np
+import pandas as pd
+import matplotlib as plt
+
+!pip install openmeteo_requests
+import openmeteo_requests
+import requests_cache
+!pip install retry_requests
+from retry_requests import retry
+from datetime import datetime
+import json
+
+# Making API call
+
+import requests
+
+url = 'https://api.openweathermap.org/data/2.5/forecast?lat=51.50&lon=0.12&appid=22d41131c3b097332df0f268cfa5a72c'
+
+response = requests.get(url)
+print(response.status_code)
+print(response.json())
+
+with open ('response.json','r') as file:
+    data = json.load(file)
+    
+print(data)
+
