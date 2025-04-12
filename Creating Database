@@ -1,0 +1,140 @@
+CREATE TABLE Temperature ( 
+	id int,
+	avg_temp_c float,
+	feels_like_c float,
+	temp_min_c float,
+	temp_max_c float,
+	PRIMARY KEY (id)
+);
+
+INSERT INTO Temperature (id, avg_temp_c, feels_like_c, temp_min_c, temp_max_c)
+SELECT dt, ROUND(df.temp_c, 2), ROUND(df.feels_like_c,2), ROUND(df.temp_min_c,2), ROUND(df.temp_max_c,2)
+FROM df;
+
+CREATE TABLE Visibility (
+id int,
+visibility_m int,
+PRIMARY KEY (id)
+);
+
+INSERT INTO Visibility
+SELECT dt, visibility_m
+FROM df;
+
+CREATE TABLE Description (
+id int,
+description CHAR (64),
+PRIMARY KEY (id)
+);
+
+INSERT INTO Description 
+SELECT dt, weather_description
+FROM df;
+
+CREATE TABLE Wind (
+id int,
+wind_speed_ms float, 
+wind_gust_ms float,
+wind_direction_degree int,
+PRIMARY KEY (id)
+);
+
+INSERT INTO Wind 
+SELECT dt, "wind_speed_m/s", "wind_gust_m/s", wind_direction_degree
+FROM df;
+
+CREATE TABLE Humidity (
+id int,
+humidity_percent int,
+PRIMARY KEY (id)
+);
+
+INSERT INTO Humidity
+SELECT dt, "humidity_%"
+FROM df;
+
+CREATE TABLE Rain (
+id int,
+rain_past3hours_mm float,
+PRIMARY KEY (id)
+);
+
+INSERT INTO Rain
+SELECT dt, rain_past3hours_mm
+FROM df;
+
+CREATE TABLE Cloud (
+id int,
+cloud_percentage int,
+PRIMARY KEY (id)
+);
+
+INSERT INTO Cloud
+SELECT dt, "cloud_%"
+FROM df;
+
+CREATE TABLE Date_Time (
+id int,
+instance datetime,
+day_or_night text,
+PRIMARY KEY (id)
+);
+
+INSERT INTO Date_Time 
+SELECT dt, dt_txt, day_or_night
+FROM df;
+
+CREATE TABLE Fact_Table ( 
+	temperature_id INTEGER REFERENCES Temperature (id),
+	visibility_id INTEGER REFERENCES Visibility (id),
+	humidity_id INTEGER  REFERENCES Humidity (id),
+	description_id INTEGER REFERENCES Description (id),
+	wind_id INTEGER REFERENCES Wind (id),
+	rain_id INTEGER REFERENCES Rain (id),
+	cloud_id INTEGER REFERENCES Cloud (id),
+	date_time_id INTEGER REFERENCES Date_Time (id),
+	avg_temp_c INTEGER,
+	feels_like_c INTEGER,
+	temp_min_c INTEGER,
+	rain_past3hours_mm INTEGER
+);
+
+INSERT INTO Fact_Table (
+temperature_id,
+visibility_id,
+humidity_id,
+description_id,
+wind_id,
+rain_id,
+cloud_id,
+date_time_id,
+avg_temp_c,
+feels_like_c,
+temp_min_c,
+rain_past3hours_mm
+)
+SELECT
+Temperature.id,
+Visibility.id,
+Humidity.id,
+Description.id,
+Wind.id,
+Rain.id,
+Cloud.id,
+Date_Time.id,
+Temperature.avg_temp_c,
+Temperature.feels_like_c,
+Temperature.temp_min_c,
+Rain.rain_past3hours_mm
+FROM Temperature
+JOIN Visibility ON Temperature.id = Visibility.id
+JOIN Humidity ON Temperature.id = Humidity.id
+JOIN Description ON Humidity.id = Description.id
+JOIN Wind ON Description.id = Wind.id
+JOIN Rain ON Wind.id = Rain.id
+JOIN Cloud ON Rain.id = Cloud.id
+JOIN Date_Time On Cloud.id = Rain.id;
+
+SELECT *
+FROM Fact_Table
+LIMIT 5;
