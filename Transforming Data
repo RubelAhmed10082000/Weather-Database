@@ -1,0 +1,45 @@
+# Flattening JSON file
+
+df = pd.json_normalize(data, record_path = 'list', sep = ',')
+df
+
+# Converting Kelvin to Celcius
+df_temp = df[['main,temp','main,feels_like','main,temp_min','main,temp_max']]
+df_temp = df_temp[['main,temp','main,feels_like','main,temp_min','main,temp_max']] - 273
+df_temp
+
+# Putting values back into original df
+df[['main,temp','main,feels_like','main,temp_min','main,temp_max']] = df_temp[['main,temp','main,feels_like','main,temp_min','main,temp_max']]
+df
+
+# Dropping uneeded columns
+
+df = df.drop(columns = ['pop','main,pressure','main,sea_level','main,grnd_level','main,temp_kf'])
+df
+
+# Renaming columns - including units of measurment
+
+df = df.rename(columns = {'weather':'weather_description','visibility':'visibility_m','main,temp':'temp_c','main,feels_like':'feels_like_c','main,temp_min':'temp_min_c','main,humidity':'humidity_%','clouds,all': 'cloud_%','wind,speed':'wind_speed_m/s','wind,deg':'wind_direction_degree','wind,gust':'wind_gust_m/s','sys,pod':'day_or_night','rain,3h':'rain_past3hours_mm','main,temp_max':'temp_max_c'})
+df
+
+# Extracting 'Description' string so it is the only thing that appears in the weather_description column
+
+def extract_description(weather_list):
+    # Extract the description from the first element
+    return weather_list[0]['description']
+
+df['weather_description'] = df['weather_description'].apply(extract_description)
+df
+
+# Replacing N & D with Night & Day
+
+df['day_or_night'] = df['day_or_night'].replace('n','night')
+df['day_or_night'] = df['day_or_night'].replace('d','day')
+df
+
+# I need to astype description into a string and day_or_night into categorical
+
+df['weather_description'] = df['weather_description'].astype(str)
+df['day_or_night'] = df['day_or_night'].astype("category")
+df.dtypes
+
